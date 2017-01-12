@@ -1,5 +1,4 @@
-use std::mem;
-
+#[allow(dead_code)]
 #[derive(PartialEq, Eq, Clone, Copy, Debug)]
 pub enum Register {
     A,
@@ -30,27 +29,35 @@ impl Register {
 }
 
 pub trait RegOps {
+    /// Get the value of an 8-bit register.
     fn read_word(&self, reg: Register) -> u8;
+
+    /// Set the value of an 8-bit register.
     fn write_word(&mut self, reg: Register, data: u8);
 
+    /// Get the value of a 16-bit register.
     fn read_dword(&self, reg: Register) -> u16;
+
+    /// Set the value of a 16-bit register.
     fn write_dword(&mut self, reg: Register, data: u16);
 
+    /// Copy the contents of one register into an equally-sized register.
     fn copy_reg(&mut self, dst: Register, src: Register);
 }
 
 /// Represents the registers on the Gameboy CPU as a [u8]
 ///
-/// Laid out in the following format:
-/// [ F, A
-/// , C, B
-/// , E, D
-/// , L, H
-/// ,  SP
-/// ,  PC ]
-///
-/// The order in which the fields are arranged is based on the way they are arranged
-/// physically on the Gameboy's hardware.
+/// Gameboy registers laid out in the following format (note the offset ranges):
+///  _____________
+/// |  F-8 | 7-0  |
+/// |------|------|
+/// |   A  |  F   |
+/// |   B  |  C   |
+/// |   D  |  E   |
+/// |   H  |  L   |
+/// |      SP     |
+/// |      PC     |
+/// +-------------+
 #[derive(Debug, Copy, Clone)]
 pub struct RegDataArray([u8; 12]);
 
@@ -102,8 +109,9 @@ impl RegOps for RegDataArray {
 
         let idx = self.get_idx_for_register(reg);
 
-        // The Gameboy uses big-endian byte ordering, so the bytes are arranged
-        // as || high | low || in memory.
+        // The Gameboy uses little-endian byte ordering, so if you are reading
+        // register XY, Y will occur at the lower memory offset while X will be
+        // found at the hiher offset.
         let high = self.0[idx] as u16;
         let low = self.0[idx + 1] as u16;
 
