@@ -1,3 +1,6 @@
+#[macro_use]
+extern crate bitflags;
+
 mod register;
 
 use register::*;
@@ -9,7 +12,7 @@ fn main() {
     }
     
     let mut regs = RegDataArray::new(arr);
-    regs.write_dword(Register::AF, 0xAAFF);
+    regs.write_dword(Register::AF, 0xAAF0);
     regs.write_dword(Register::BC, 0xBBCC);
     regs.write_dword(Register::DE, 0xDDEE);
     regs.write_dword(Register::HL, 0x8899);
@@ -18,4 +21,11 @@ fn main() {
     println!("0x{:x}", regs.read_dword(Register::BC));
     println!("0x{:x}", regs.read_dword(Register::DE));
     println!("0x{:x}", regs.read_dword(Register::HL));
+
+    println!("");
+
+    let mut flags = regs.get_flags();
+    println!("{:?}", flags);
+    flags.remove(N_FLAG);
+    println!("{:?}", flags);
 }

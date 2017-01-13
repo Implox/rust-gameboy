@@ -4,3 +4,4 @@ version = "0.1.0"
 authors = ["Impl0x <alexmflores@gmail.com>"]
 
 [dependencies]
+bitflags = "0.7.0"

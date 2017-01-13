@@ -1,11 +1,14 @@
+/// Represents a choice of register in the Gameboy CPU.
 #[allow(dead_code)]
 #[derive(PartialEq, Eq, Clone, Copy, Debug)]
 pub enum Register {
+    /// The accumulator register.
     A,
     B,
     C,
     D,
     E,
+    /// The status flags register.
     F,
     H,
     L,
@@ -13,7 +16,9 @@ pub enum Register {
     BC,
     DE,
     HL,
+    /// The stack pointer register.
     SP,
+    /// The program counter register.
     PC,
 }
 
@@ -25,6 +30,31 @@ impl Register {
             Register::H | Register::L => 1,
             _ => 2,
         }
+    }
+}
+
+bitflags! {
+    /// Constant values representing the four status flags in the F register.
+    pub flags StatusFlags: u8 {
+        /// The zero flag.
+        /// This bit is set when the result of a math operation is zero
+        /// or two values match when using the CP instruction.
+        const Z_FLAG = 0b1000_0000,
+
+        /// The subtract flag.
+        /// This bit is set if a subtraction was performed 
+        /// in the last math instruction.
+        const N_FLAG = 0b0100_0000,
+
+        /// The half-carry flag.
+        /// This bit is set if a carry occurred from the lower nibble in
+        /// the last math operation.
+        const H_FLAG = 0b0010_0000,
+
+        /// The carry flag.
+        /// This bit is set if a carry occurred from the last math operation
+        /// or if register A is the smaller value when executing the CP instruction.
+        const C_FLAG = 0b0001_0000,
     }
 }
 
@@ -43,6 +73,12 @@ pub trait RegOps {
 
     /// Copy the contents of one register into an equally-sized register.
     fn copy_reg(&mut self, dst: Register, src: Register);
+
+    /// Gets the StatusFlags representation of the current status flag values.
+    fn get_flags(&self) -> StatusFlags;
+
+    /// Sets the current status flag values to the given value.
+    fn set_flags(&mut self, flags: StatusFlags);
 }
 
 /// Represents the registers on the Gameboy CPU as a [u8]
@@ -153,5 +189,18 @@ impl RegOps for RegDataArray {
         let dst_idx = self.get_idx_for_register(dst);
         let src_idx = self.get_idx_for_register(src);
         self.0[dst_idx] = self.0[src_idx];
+    }
+
+    fn get_flags(&self) -> StatusFlags {
+        let f_word = self.read_word(Register::F);
+        if let Some(flags) = StatusFlags::from_bits(f_word) {
+            return flags;
+        } else {
+            panic!("Lower four bits in F register are non-zero!");
+        }
+    }
+
+    fn set_flags(&mut self, flags: StatusFlags) {
+        self.write_word(Register::F, flags.bits());
     }
 }
