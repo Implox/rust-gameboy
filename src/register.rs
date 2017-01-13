@@ -79,6 +79,9 @@ pub trait RegOps {
 
     /// Sets the current status flag values to the given value.
     fn set_flags(&mut self, flags: StatusFlags);
+
+    /// Increments the value in the program counter register.
+    fn inc_counter(&mut self);
 }
 
 /// Represents the registers on the Gameboy CPU as a [u8]
@@ -202,5 +205,10 @@ impl RegOps for RegDataArray {
 
     fn set_flags(&mut self, flags: StatusFlags) {
         self.write_word(Register::F, flags.bits());
+    }
+
+    fn inc_counter(&mut self) {
+        let counter = self.read_dword(Register::PC);
+        self.write_dword(Register::PC, counter + 1);
     }
 }
