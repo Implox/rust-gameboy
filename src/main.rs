@@ -1,9 +1,11 @@
 #[macro_use]
 extern crate bitflags;
 
-mod register;
+pub mod register;
+pub mod memory;
 
 use register::*;
+use memory::*;
 
 fn main() {
     let mut arr = [0u8; 12];
