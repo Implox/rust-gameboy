@@ -82,7 +82,6 @@ impl Memory {
             // Handle address-specific reads
             INTERRUPT_ENABLE => self.interrupt,
 
-            // Handle regular segment reads.
             CART_START ... CART_END => self.cart[addr as usize],
             VRAM_START ... VRAM_END => self.vram[(addr - VRAM_START) as usize],
             EXRAM_START ... EXRAM_END => self.exram[(addr - EXRAM_START) as usize],
@@ -93,6 +92,24 @@ impl Memory {
             HRAM_START ... HRAM_END => self.hram[(addr - HRAM_START) as usize],
 
             _ => panic!("Cannot read memory from location: 0x{:4x}", addr)
+        }
+    }
+
+    pub fn write_word(&mut self, addr: Address, data: u8) {
+        match addr {
+            // Handle address-specific writes
+            INTERRUPT_ENABLE => self.interrupt = data,
+
+            CART_START ... CART_END => self.cart[addr as usize] = data,
+            VRAM_START ... VRAM_END => self.vram[(addr - VRAM_START) as usize] = data,
+            EXRAM_START ... EXRAM_END => self.exram[(addr - EXRAM_START) as usize] = data,
+            INRAM_START ... INRAM_END => self.inram[(addr - INRAM_START) as usize] = data,
+            ERAM_START ... ERAM_END => self.inram[(addr - ERAM_START) as usize] = data,
+            OAM_START ... OAM_END => self.oam[(addr - OAM_START) as usize] = data,
+            IO_START ... IO_END => self.io[(addr - IO_START) as usize] = data,
+            HRAM_START ... HRAM_END => self.hram[(addr - HRAM_START) as usize] = data,
+
+            _ => panic!("Cannot write to memory location: 0x{:4x}", addr)
         }
     }
 }
